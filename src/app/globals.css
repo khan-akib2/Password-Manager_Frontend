@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #020817;
+  --foreground: #e2e8f0;
 }
 
 @theme inline {
@@ -12,15 +12,118 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+/* ── Animated orbs ── */
+.orb {
+  position: fixed;
+  border-radius: 9999px;
+  filter: blur(120px);
+  opacity: 0.18;
+  pointer-events: none;
+  z-index: 0;
+  animation: orbFloat 12s ease-in-out infinite;
+}
+.orb-1 {
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, #6366f1, #8b5cf6);
+  top: -200px; left: -200px;
+  animation-delay: 0s;
+}
+.orb-2 {
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, #06b6d4, #3b82f6);
+  bottom: -150px; right: -150px;
+  animation-delay: -6s;
+}
+
+@keyframes orbFloat {
+  0%, 100% { transform: translateY(0px) scale(1); }
+  33%       { transform: translateY(-30px) scale(1.05); }
+  66%       { transform: translateY(20px) scale(0.97); }
+}
+
+/* ── Glass card ── */
+.glass {
+  background: rgba(15, 23, 42, 0.75) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(99, 102, 241, 0.18) !important;
+}
+
+/* ── Primary button ── */
+.btn-primary {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
+  color: #fff;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #818cf8, #a78bfa) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+}
+.btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Input focus glow ── */
+.input-glow:focus {
+  outline: none;
+  border-color: #6366f1 !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.18);
+}
+
+/* ── Card hover lift ── */
+.card-hover {
+  transition: all 0.2s ease;
+}
+.card-hover:hover {
+  border-color: rgba(99, 102, 241, 0.35) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+}
+
+/* ── Gradient text ── */
+.gradient-text {
+  background: linear-gradient(135deg, #818cf8, #a78bfa, #c084fc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #0f172a; }
+::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #6366f1; }
+
+/* ── Smooth slide-down / fade-in for toggled panels ── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInItem {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes formSlideIn {
+  from { opacity: 0; transform: translateY(-12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
