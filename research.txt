@@ -1,0 +1,166 @@
+================================================================
+PROJECT RESEARCH DOCUMENT
+================================================================
+Project Name : SafeBuddy
+Type         : Full-Stack Web Application (Password Manager)
+================================================================
+
+
+----------------------------------------------------------------
+TECH STACK
+----------------------------------------------------------------
+
+FRONTEND
+--------
+- Next.js 16         : React-based framework used for building the frontend.
+                       Uses the App Router (app/ directory structure).
+                       Each page is a React Server / Client Component.
+
+- React 19           : Core UI library. All interactive pages use
+                       "use client" directive for client-side rendering.
+
+- Tailwind CSS 4     : Utility-first CSS framework used for all styling.
+                       Dark theme built with gray-900/950 palette and
+                       indigo accent colors throughout the app.
+
+- Axios              : HTTP client used to communicate with the backend
+                       REST API (login, signup, CRUD operations).
+
+- Next.js Font       : Geist font loaded via next/font/google for
+                       clean, modern typography.
+
+BACKEND  (separate backend server, connected via API)
+------------------------------------------------------
+- Node.js            : JavaScript runtime for the backend server.
+
+- Express.js         : Web framework used to build the REST API.
+
+- MongoDB            : NoSQL database used to store user accounts
+                       and saved password entries.
+
+- Mongoose           : ODM (Object Data Modeling) library for MongoDB,
+                       used to define schemas and interact with the DB.
+
+- JWT (JSON Web Token) : Used for authentication. On login/signup a
+                         token is issued and stored in localStorage.
+                         Every protected API request sends this token
+                         in the Authorization header as Bearer <token>.
+
+- bcrypt             : Used on the backend to hash and securely store
+                       user passwords before saving to MongoDB.
+
+ENVIRONMENT & TOOLING
+----------------------
+- .env.local         : Stores NEXT_PUBLIC_API_URL pointing to the
+                       backend server (default: http://localhost:5000).
+
+- ESLint             : Code linting configured via eslint.config.mjs.
+
+- PostCSS            : Used alongside Tailwind CSS for CSS processing.
+
+
+----------------------------------------------------------------
+PROJECT STRUCTURE (Frontend)
+----------------------------------------------------------------
+
+src/
+  app/
+    page.js           -> Root redirect. Checks localStorage for a JWT
+                         token and redirects to /Dashboard or /Login.
+    layout.js         -> Global layout. Applies Geist font and base
+                         dark background to every page.
+    globals.css       -> Global CSS. Imports Tailwind and sets base
+                         color variables.
+
+    Login/
+      page.jsx        -> Login page with email + password form.
+
+    Signup/
+      page.jsx        -> Registration page with first name, last name,
+                         email, password, confirm password fields.
+
+    Dashboard/
+      page.jsx        -> Main app page. Lists all saved passwords,
+                         supports add / edit / delete / search.
+
+    Profile/
+      page.jsx        -> (Planned) User profile page where the user
+                         can view their account info and change their
+                         account password.
+
+
+----------------------------------------------------------------
+WHAT THE PROJECT DOES  —  DETAILED EXPLANATION
+----------------------------------------------------------------
+
+SafeBuddy is a secure, full-stack password manager web application.
+Its purpose is to let users store, manage, and retrieve all their
+website/app credentials in one safe place, protected behind their
+own account.
+
+1. AUTHENTICATION
+   Users can create an account (Signup) by providing their first
+   name, last name, email, and a password. Passwords are hashed
+   with bcrypt on the backend before being stored in MongoDB.
+   On successful signup or login, the backend returns a JWT token
+   which the frontend stores in localStorage. This token is
+   attached to every subsequent API request to prove identity.
+   If the token is missing or invalid, the user is automatically
+   redirected to the Login page.
+
+2. DASHBOARD — PASSWORD VAULT
+   After logging in, the user lands on the Dashboard which is the
+   core of the application. Here they can:
+
+   - ADD a new password entry by providing:
+       * Website / App name
+       * Username or email used on that site
+       * The password for that site
+
+   - VIEW all saved entries in a clean card list.
+
+   - SHOW / HIDE individual passwords (masked by default as ••••••••
+     for security, revealed on demand with the Show button).
+
+   - EDIT any existing entry to update the site, username, or
+     password.
+
+   - DELETE any entry they no longer need (with a confirmation
+     prompt to prevent accidental deletion).
+
+   - SEARCH through all saved entries in real time by site name
+     or username, making it easy to find credentials quickly.
+
+3. PROFILE & PASSWORD CHANGE  (planned / in progress)
+   A dedicated Profile page allows the user to:
+
+   - View their account information (name, email).
+   - Change their account password by entering their current
+     password and a new password (with confirmation), keeping
+     the account secure over time.
+
+4. SECURITY APPROACH
+   - Passwords stored in the vault are saved in MongoDB and only
+     accessible to the authenticated user via JWT-protected routes.
+   - The master account password is hashed with bcrypt and never
+     stored in plain text.
+   - Vault passwords are hidden by default in the UI and only
+     revealed on explicit user action.
+   - Logging out clears the JWT token from localStorage immediately.
+
+5. USER EXPERIENCE
+   - Fully dark-themed UI for a modern, focused look.
+   - Responsive layout that works on mobile and desktop.
+   - Real-time search filtering without any page reloads.
+   - Smooth transitions and loading states throughout.
+
+
+----------------------------------------------------------------
+SUMMARY
+----------------------------------------------------------------
+SafeBuddy is a personal password manager built with Next.js on the
+frontend and a Node.js / Express / MongoDB backend. It lets users
+securely register, log in, and manage all their website credentials
+in one place, with JWT-based authentication keeping every user's
+data private and protected.
+================================================================
