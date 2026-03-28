@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import axios from "axios";
+import api from "@/lib/api";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -18,35 +18,42 @@ export default function Signup() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    if (form.password !== form.confirmPassword) return setError("Passwords do not match");
-    if (form.password.length < 6) return setError("Password must be at least 6 characters");
+
+    const firstName = form.firstName.trim();
+    const lastName  = form.lastName.trim();
+    const email     = form.email.trim().toLowerCase();
+    const { password, confirmPassword } = form;
+
+    if (!firstName || !lastName || !email || !password)
+      return setError("All fields are required");
+    if (password !== confirmPassword)
+      return setError("Passwords do not match");
+    if (password.length < 6)
+      return setError("Password must be at least 6 characters");
 
     setLoading(true);
     try {
-      const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/signup`, {
-        firstName: form.firstName, lastName: form.lastName,
-        email: form.email, password: form.password,
-      });
+      const res = await api.post("/api/auth/signup", { firstName, lastName, email, password });
       localStorage.setItem("token", res.data.token);
       router.push("/Dashboard");
     } catch (err) {
-      setError(err.response?.data?.message || "Signup failed");
+      setError(err.response?.data?.message || "Signup failed. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  const inputClass =
-    "input-glow w-full rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none transition text-sm";
+  const inputClass = "input-glow w-full rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none transition text-sm";
   const inputStyle = { background: "rgba(15,23,42,0.9)", border: "1px solid rgba(99,102,241,0.25)" };
 
   const strength = (() => {
     const p = form.password;
     if (!p) return null;
-    if (p.length < 6) return { label: "Too short", color: "bg-red-500", w: "w-1/4" };
-    if (p.length < 8) return { label: "Weak", color: "bg-orange-500", w: "w-2/4" };
-    if (p.length < 12 || !/[^a-zA-Z0-9]/.test(p)) return { label: "Good", color: "bg-yellow-500", w: "w-3/4" };
-    return { label: "Strong", color: "bg-green-500", w: "w-full" };
+    if (p.length < 6)  return { label: "Too short", color: "bg-red-500",    w: "w-1/4" };
+    if (p.length < 8)  return { label: "Weak",      color: "bg-orange-500", w: "w-2/4" };
+    if (p.length < 12 || !/[^a-zA-Z0-9]/.test(p))
+                       return { label: "Good",      color: "bg-yellow-500", w: "w-3/4" };
+    return               { label: "Strong",    color: "bg-green-500",  w: "w-full" };
   })();
 
   return (
@@ -55,7 +62,6 @@ export default function Signup() {
       <div className="orb orb-2" />
 
       <div className="relative z-10 w-full max-w-md">
-        {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-4"
             style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)" }}>
@@ -70,24 +76,26 @@ export default function Signup() {
 
         <div className="glass rounded-3xl p-8 shadow-2xl">
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Name row */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">First name</label>
                 <input name="firstName" type="text" required value={form.firstName}
-                  onChange={handleChange} placeholder="John" className={inputClass} style={inputStyle} />
+                  onChange={handleChange} placeholder="John" autoComplete="given-name"
+                  className={inputClass} style={inputStyle} />
               </div>
               <div>
                 <label className="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">Last name</label>
                 <input name="lastName" type="text" required value={form.lastName}
-                  onChange={handleChange} placeholder="Doe" className={inputClass} style={inputStyle} />
+                  onChange={handleChange} placeholder="Doe" autoComplete="family-name"
+                  className={inputClass} style={inputStyle} />
               </div>
             </div>
 
             <div>
               <label className="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">Email address</label>
               <input name="email" type="email" required value={form.email}
-                onChange={handleChange} placeholder="you@example.com" className={inputClass} style={inputStyle} />
+                onChange={handleChange} placeholder="you@example.com" autoComplete="email"
+                className={inputClass} style={inputStyle} />
             </div>
 
             <div>
@@ -95,13 +103,12 @@ export default function Signup() {
               <div className="relative">
                 <input name="password" type={showPassword ? "text" : "password"} required
                   value={form.password} onChange={handleChange} placeholder="Min. 6 characters"
-                  className={inputClass + " pr-16"} style={inputStyle} />
-                <button type="button" onClick={() => setShowPassword(!showPassword)}
+                  autoComplete="new-password" className={inputClass + " pr-16"} style={inputStyle} />
+                <button type="button" onClick={() => setShowPassword((s) => !s)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-white transition px-1">
                   {showPassword ? "Hide" : "Show"}
                 </button>
               </div>
-              {/* Strength bar */}
               {strength && (
                 <div className="mt-2">
                   <div className="h-1 bg-slate-700 rounded-full overflow-hidden">
@@ -116,7 +123,8 @@ export default function Signup() {
               <label className="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">Confirm password</label>
               <input name="confirmPassword" type={showPassword ? "text" : "password"} required
                 value={form.confirmPassword} onChange={handleChange}
-                placeholder="Re-enter your password" className={inputClass} style={inputStyle} />
+                placeholder="Re-enter your password" autoComplete="new-password"
+                className={inputClass} style={inputStyle} />
             </div>
 
             <div className="flex items-start gap-3 pt-1">
@@ -131,7 +139,8 @@ export default function Signup() {
             </div>
 
             {error && (
-              <div className="flex items-center gap-2.5 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
+              <div className="flex items-center gap-2.5 rounded-xl px-4 py-3"
+                style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)" }}>
                 <svg className="w-4 h-4 text-red-400 shrink-0" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                 </svg>

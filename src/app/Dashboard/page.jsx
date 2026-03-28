@@ -1,10 +1,10 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
-import axios from "axios";
+import api from "@/lib/api";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-const API = `${process.env.NEXT_PUBLIC_API_URL}/api/password`;
+const API = "/api/password";
 const emptyForm = { site: "", username: "", password: "" };
 
 function getAuthHeader() {
@@ -40,10 +40,11 @@ export default function Dashboard() {
   const [search, setSearch] = useState("");
   const [showFormPassword, setShowFormPassword] = useState(false);
   const [copiedId, setCopiedId] = useState(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
 
   const fetchPasswords = useCallback(async () => {
     try {
-      const res = await axios.get(API, { headers: getAuthHeader() });
+      const res = await api.get(API);
       setPasswords(res.data);
     } catch (err) {
       if (err.response?.status === 401) {
@@ -67,12 +68,23 @@ export default function Dashboard() {
     e.preventDefault();
     setError("");
     setSaving(true);
+    // trim inputs before sending
+    const payload = {
+      site: form.site.trim(),
+      username: form.username.trim(),
+      password: form.password,
+    };
+    if (!payload.site || !payload.username || !payload.password) {
+      setError("All fields are required");
+      setSaving(false);
+      return;
+    }
     try {
       if (editId) {
-        const res = await axios.put(`${API}/${editId}`, form, { headers: getAuthHeader() });
+        const res = await api.put(`${API}/${editId}`, payload);
         setPasswords(passwords.map((p) => (p._id === editId ? res.data : p)));
       } else {
-        const res = await axios.post(`${API}/add`, form, { headers: getAuthHeader() });
+        const res = await api.post(`${API}/add`, payload);
         setPasswords([res.data, ...passwords]);
       }
       setForm(emptyForm);
@@ -94,12 +106,17 @@ export default function Dashboard() {
   };
 
   const handleDelete = async (id) => {
-    if (!confirm("Delete this entry?")) return;
+    if (deleteConfirmId !== id) {
+      setDeleteConfirmId(id);
+      setTimeout(() => setDeleteConfirmId(null), 3000);
+      return;
+    }
+    setDeleteConfirmId(null);
     try {
-      await axios.delete(`${API}/${id}`, { headers: getAuthHeader() });
+      await api.delete(`${API}/${id}`);
       setPasswords(passwords.filter((p) => p._id !== id));
     } catch {
-      alert("Failed to delete");
+      setError("Failed to delete entry");
     }
   };
 
@@ -111,8 +128,20 @@ export default function Dashboard() {
     });
   };
 
+  // Clipboard with fallback for HTTP/older browsers
   const copyPassword = (id, pw) => {
-    navigator.clipboard.writeText(pw);
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(pw).catch(() => {});
+    } else {
+      const el = document.createElement("textarea");
+      el.value = pw;
+      el.style.position = "fixed";
+      el.style.opacity = "0";
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand("copy");
+      document.body.removeChild(el);
+    }
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
   };
@@ -317,10 +346,17 @@ export default function Dashboard() {
                       </svg>
                     </button>
                     <button onClick={() => handleDelete(item._id)} title="Delete"
-                      className="p-2 text-red-400 hover:text-red-300 rounded-lg transition" style={{ background: "rgba(30,41,59,0.8)" }}>
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
+                      className="p-2 rounded-lg transition text-sm font-medium px-3"
+                      style={{
+                        background: deleteConfirmId === item._id ? "rgba(239,68,68,0.2)" : "rgba(30,41,59,0.8)",
+                        color: deleteConfirmId === item._id ? "#f87171" : "#f87171",
+                        border: deleteConfirmId === item._id ? "1px solid rgba(239,68,68,0.4)" : "none",
+                      }}>
+                      {deleteConfirmId === item._id ? "Confirm?" : (
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      )}
                     </button>
                   </div>
                 </div>

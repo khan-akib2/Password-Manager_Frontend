@@ -1,10 +1,10 @@
 "use client";
 import { useState, useEffect } from "react";
-import axios from "axios";
+import api from "@/lib/api";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-const API = `${process.env.NEXT_PUBLIC_API_URL}/api/auth`;
+const API = "/api/auth";
 
 function getAuthHeader() {
   return { Authorization: `Bearer ${localStorage.getItem("token")}` };
@@ -24,7 +24,7 @@ export default function Profile() {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) { router.push("/Login"); return; }
-    axios.get(`${API}/me`, { headers: getAuthHeader() })
+    api.get(`${API}/me`)
       .then((res) => setUser(res.data))
       .catch((err) => {
         if (err.response?.status === 401) {
@@ -48,9 +48,8 @@ export default function Profile() {
     if (form.currentPassword === form.newPassword) return setError("New password must differ from current");
     setSaving(true);
     try {
-      await axios.put(`${API}/change-password`,
-        { currentPassword: form.currentPassword, newPassword: form.newPassword },
-        { headers: getAuthHeader() }
+      await api.put(`${API}/change-password`,
+        { currentPassword: form.currentPassword, newPassword: form.newPassword }
       );
       setSuccess("Password updated successfully");
       setForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
@@ -66,7 +65,12 @@ export default function Profile() {
     router.push("/Login");
   };
 
-  const getInitials = (u) => u ? `${u.firstName[0]}${u.lastName[0]}`.toUpperCase() : "?";
+  const getInitials = (u) => {
+    if (!u) return "?";
+    const f = u.firstName?.[0] ?? "";
+    const l = u.lastName?.[0] ?? "";
+    return (f + l).toUpperCase() || "?";
+  };
 
   const inputClass =
     "input-glow w-full rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none transition text-sm";
