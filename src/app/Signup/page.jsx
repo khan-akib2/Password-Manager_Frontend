@@ -105,7 +105,7 @@ export default function Signup() {
                   value={form.password} onChange={handleChange} placeholder="Min. 6 characters"
                   autoComplete="new-password" className={inputClass + " pr-16"} style={inputStyle} />
                 <button type="button" onClick={() => setShowPassword((s) => !s)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-white transition px-1">
+                  className="cursor-pointer absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-white transition px-1">
                   {showPassword ? "Hide" : "Show"}
                 </button>
               </div>
@@ -149,7 +149,7 @@ export default function Signup() {
             )}
 
             <button type="submit" disabled={loading}
-              className="btn-primary w-full font-semibold py-3 rounded-xl text-sm mt-2"
+              className="btn-primary w-full font-semibold py-3 rounded-xl text-sm mt-2 cursor-pointer"
               style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)" }}>
               {loading ? (
                 <span className="flex items-center justify-center gap-2">

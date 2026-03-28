@@ -113,7 +113,7 @@ export default function Profile() {
               <span className="hidden sm:inline">Vault</span>
             </Link>
             <button onClick={handleLogout}
-              className="flex items-center gap-2 text-sm text-slate-300 hover:text-white px-2.5 py-2 sm:px-4 rounded-xl transition"
+              className="cursor-pointer flex items-center gap-2 text-sm text-slate-300 hover:text-white px-2.5 py-2 sm:px-4 rounded-xl transition"
               style={{ background: "rgba(30,41,59,0.9)", border: "1px solid rgba(99,102,241,0.2)" }}>
               <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -200,7 +200,7 @@ export default function Profile() {
                       placeholder="Enter current password" className={inputClass + " pr-16"}
                       style={{ background: "rgba(15,23,42,0.9)", border: "1px solid rgba(99,102,241,0.25)" }} />
                     <button type="button" onClick={() => setShowCurrent(!showCurrent)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-white transition px-1">
+                      className="cursor-pointer absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-white transition px-1">
                       {showCurrent ? "Hide" : "Show"}
                     </button>
                   </div>
@@ -216,7 +216,7 @@ export default function Profile() {
                       placeholder="Min. 6 characters" className={inputClass + " pr-16"}
                       style={{ background: "rgba(15,23,42,0.9)", border: "1px solid rgba(99,102,241,0.25)" }} />
                     <button type="button" onClick={() => setShowNew(!showNew)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-white transition px-1">
+                      className="cursor-pointer absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-white transition px-1">
                       {showNew ? "Hide" : "Show"}
                     </button>
                   </div>
@@ -258,7 +258,7 @@ export default function Profile() {
                 )}
 
                 <button type="submit" disabled={saving}
-                  className="btn-primary w-full font-semibold py-3 rounded-xl text-sm"
+                  className="cursor-pointer btn-primary w-full font-semibold py-3 rounded-xl text-sm"
                   style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)" }}>
                   {saving ? (
                     <span className="flex items-center justify-center gap-2">

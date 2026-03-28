@@ -75,7 +75,7 @@ export default function Login() {
                   className="input-glow w-full rounded-xl px-4 py-3 pr-16 text-white placeholder-slate-500 focus:outline-none transition text-sm"
                   style={{ background: "rgba(15,23,42,0.9)", border: "1px solid rgba(99,102,241,0.25)" }} />
                 <button type="button" onClick={() => setShowPassword((s) => !s)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-white transition px-1">
+                  className="cursor-pointer absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-white transition px-1">
                   {showPassword ? "Hide" : "Show"}
                 </button>
               </div>
@@ -92,7 +92,7 @@ export default function Login() {
             )}
 
             <button type="submit" disabled={loading}
-              className="btn-primary w-full font-semibold py-3 rounded-xl text-sm"
+              className="btn-primary w-full font-semibold py-3 rounded-xl text-sm cursor-pointer"
               style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)" }}>
               {loading ? (
                 <span className="flex items-center justify-center gap-2">

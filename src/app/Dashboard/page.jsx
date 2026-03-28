@@ -197,7 +197,7 @@ export default function Dashboard() {
               <span className="hidden sm:inline">Profile</span>
             </Link>
             <button onClick={handleLogout}
-              className="flex items-center gap-2 text-sm text-slate-300 hover:text-white px-2.5 py-2 sm:px-4 rounded-xl transition"
+              className="cursor-pointer flex items-center gap-2 text-sm text-slate-300 hover:text-white px-2.5 py-2 sm:px-4 rounded-xl transition"
               style={{ background: "rgba(30,41,59,0.9)", border: "1px solid rgba(99,102,241,0.2)" }}>
               <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -217,7 +217,7 @@ export default function Dashboard() {
         {/* Add button */}
         {!showForm && (
           <button onClick={() => setShowForm(true)}
-            className="btn-primary w-full font-semibold py-3.5 rounded-2xl text-sm mb-6 flex items-center justify-center gap-2"
+            className="cursor-pointer btn-primary w-full font-semibold py-3.5 rounded-2xl text-sm mb-6 flex items-center justify-center gap-2"
             style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)" }}>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
@@ -244,9 +244,9 @@ export default function Dashboard() {
               <div className="relative">
                 <input name="password" required value={form.password} onChange={handleChange}
                   type={showFormPassword ? "text" : "password"} placeholder="Password"
-                  className={inp + " pr-16"} style={inpStyle} />
+                  className= {inp + " pr-16"} style={inpStyle} />
                 <button type="button" onClick={() => setShowFormPassword(!showFormPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-white transition px-1">
+                  className="cursor-pointer absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-white transition px-1">
                   {showFormPassword ? "Hide" : "Show"}
                 </button>
               </div>
@@ -257,12 +257,12 @@ export default function Dashboard() {
               )}
               <div className="flex gap-3 pt-1">
                 <button type="submit" disabled={saving}
-                  className="btn-primary flex-1 font-semibold py-3 rounded-xl text-sm"
+                  className="cursor-pointer btn-primary flex-1 font-semibold py-3 rounded-xl text-sm"
                   style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)" }}>
                   {saving ? "Saving..." : editId ? "Update entry" : "Save password"}
                 </button>
                 <button type="button" onClick={cancelForm}
-                  className="px-5 text-slate-300 hover:text-white rounded-xl transition text-sm" style={btnStyle}>
+                  className="cursor-pointer px-5 text-slate-300 hover:text-white rounded-xl transition text-sm" style={btnStyle}>
                   Cancel
                 </button>
               </div>
@@ -315,7 +315,7 @@ export default function Dashboard() {
                   </div>
                   <div className="flex items-center gap-1.5 shrink-0 pl-0 sm:pl-2">
                     <button onClick={() => toggleVisible(item._id)} title={visibleIds.has(item._id) ? "Hide" : "Show"}
-                      className="p-2 text-slate-400 hover:text-white rounded-lg transition" style={{ background: "rgba(30,41,59,0.8)" }}>
+                      className="cursor-pointer p-2 text-slate-400 hover:text-white rounded-lg transition" style={{ background: "rgba(30,41,59,0.8)" }}>
                       {visibleIds.has(item._id) ? (
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
@@ -328,7 +328,7 @@ export default function Dashboard() {
                       )}
                     </button>
                     <button onClick={() => copyPassword(item._id, item.password)} title="Copy"
-                      className="p-2 text-slate-400 hover:text-white rounded-lg transition" style={{ background: "rgba(30,41,59,0.8)" }}>
+                      className="cursor-pointer p-2 text-slate-400 hover:text-white rounded-lg transition" style={{ background: "rgba(30,41,59,0.8)" }}>
                       {copiedId === item._id ? (
                         <svg className="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -340,13 +340,13 @@ export default function Dashboard() {
                       )}
                     </button>
                     <button onClick={() => handleEdit(item)} title="Edit"
-                      className="p-2 text-indigo-400 hover:text-indigo-300 rounded-lg transition" style={{ background: "rgba(30,41,59,0.8)" }}>
+                      className="cursor-pointer p-2 text-indigo-400 hover:text-indigo-300 rounded-lg transition" style={{ background: "rgba(30,41,59,0.8)" }}>
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                       </svg>
                     </button>
                     <button onClick={() => handleDelete(item._id)} title="Delete"
-                      className="p-2 rounded-lg transition text-sm font-medium px-3"
+                      className="cursor-pointer p-2 rounded-lg transition text-sm font-medium px-3"
                       style={{
                         background: deleteConfirmId === item._id ? "rgba(239,68,68,0.2)" : "rgba(30,41,59,0.8)",
                         color: deleteConfirmId === item._id ? "#f87171" : "#f87171",
