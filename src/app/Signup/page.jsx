@@ -6,34 +6,56 @@ import Link from "next/link";
 
 export default function Signup() {
   const router = useRouter();
-  const [form, setForm] = useState({
-    firstName: "", lastName: "", email: "", password: "", confirmPassword: "",
-  });
+  const [form, setForm] = useState({ firstName: "", lastName: "", email: "", password: "", confirmPassword: "", otp: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+  const [sendingOtp, setSendingOtp] = useState(false);
+  const [otpCooldown, setOtpCooldown] = useState(0);
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+
+  const startCooldown = () => {
+    setOtpCooldown(60);
+    const t = setInterval(() => {
+      setOtpCooldown((c) => { if (c <= 1) { clearInterval(t); return 0; } return c - 1; });
+    }, 1000);
+  };
+
+  const handleSendOtp = async () => {
+    setError("");
+    const email = form.email.trim().toLowerCase();
+    if (!email) return setError("Enter your email first");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return setError("Invalid email address");
+    setSendingOtp(true);
+    try {
+      await api.post("/api/auth/send-otp", { email });
+      setOtpSent(true);
+      startCooldown();
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to send OTP");
+    } finally {
+      setSendingOtp(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-
     const firstName = form.firstName.trim();
-    const lastName  = form.lastName.trim();
-    const email     = form.email.trim().toLowerCase();
-    const { password, confirmPassword } = form;
+    const lastName = form.lastName.trim();
+    const email = form.email.trim().toLowerCase();
+    const { password, confirmPassword, otp } = form;
 
-    if (!firstName || !lastName || !email || !password)
-      return setError("All fields are required");
-    if (password !== confirmPassword)
-      return setError("Passwords do not match");
-    if (password.length < 6)
-      return setError("Password must be at least 6 characters");
+    if (!firstName || !lastName || !email || !password) return setError("All fields are required");
+    if (password !== confirmPassword) return setError("Passwords do not match");
+    if (password.length < 6) return setError("Password must be at least 6 characters");
+    if (!otp) return setError("Enter the OTP sent to your email");
 
     setLoading(true);
     try {
-      const res = await api.post("/api/auth/signup", { firstName, lastName, email, password });
+      const res = await api.post("/api/auth/signup", { firstName, lastName, email, password, otp });
       localStorage.setItem("token", res.data.token);
       router.push("/Dashboard");
     } catch (err) {
@@ -44,23 +66,21 @@ export default function Signup() {
   };
 
   const inputClass = "input-glow w-full rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none transition text-sm";
-  const inputStyle = { background: "rgba(15,23,42,0.9)", border: "1px solid rgba(99,102,241,0.25)" };
+  const inputStyle = { background: "rgba(15,23,42,0.9)", border: "1px solid rgba(99,102,241,0.25)", fontSize: "16px" };
 
   const strength = (() => {
     const p = form.password;
     if (!p) return null;
-    if (p.length < 6)  return { label: "Too short", color: "bg-red-500",    w: "w-1/4" };
-    if (p.length < 8)  return { label: "Weak",      color: "bg-orange-500", w: "w-2/4" };
-    if (p.length < 12 || !/[^a-zA-Z0-9]/.test(p))
-                       return { label: "Good",      color: "bg-yellow-500", w: "w-3/4" };
-    return               { label: "Strong",    color: "bg-green-500",  w: "w-full" };
+    if (p.length < 6) return { label: "Too short", color: "bg-red-500", w: "w-1/4" };
+    if (p.length < 8) return { label: "Weak", color: "bg-orange-500", w: "w-2/4" };
+    if (p.length < 12 || !/[^a-zA-Z0-9]/.test(p)) return { label: "Good", color: "bg-yellow-500", w: "w-3/4" };
+    return { label: "Strong", color: "bg-green-500", w: "w-full" };
   })();
 
   return (
     <div className="relative flex items-center justify-center min-h-screen px-4 py-12 overflow-hidden">
       <div className="orb orb-1" />
       <div className="orb orb-2" />
-
       <div className="relative z-10 w-full max-w-md">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-4"
@@ -93,10 +113,27 @@ export default function Signup() {
 
             <div>
               <label className="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">Email address</label>
-              <input name="email" type="email" required value={form.email}
-                onChange={handleChange} placeholder="you@example.com" autoComplete="email"
-                className={inputClass} style={inputStyle} />
+              <div className="flex gap-2">
+                <input name="email" type="email" required value={form.email}
+                  onChange={handleChange} placeholder="you@example.com" autoComplete="email"
+                  className={inputClass} style={inputStyle} />
+                <button type="button" onClick={handleSendOtp} disabled={sendingOtp || otpCooldown > 0}
+                  className="shrink-0 px-3 py-2 rounded-xl text-xs font-semibold text-white transition"
+                  style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)", opacity: (sendingOtp || otpCooldown > 0) ? 0.6 : 1, minWidth: "80px" }}>
+                  {sendingOtp ? "..." : otpCooldown > 0 ? `${otpCooldown}s` : otpSent ? "Resend" : "Send OTP"}
+                </button>
+              </div>
+              {otpSent && <p className="text-green-400 text-xs mt-1">OTP sent to your email</p>}
             </div>
+
+            {otpSent && (
+              <div>
+                <label className="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">Verification code</label>
+                <input name="otp" type="text" inputMode="numeric" maxLength={6} required
+                  value={form.otp} onChange={handleChange} placeholder="6-digit code"
+                  className={inputClass} style={inputStyle} />
+              </div>
+            )}
 
             <div>
               <label className="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">Password</label>
@@ -105,7 +142,7 @@ export default function Signup() {
                   value={form.password} onChange={handleChange} placeholder="Min. 6 characters"
                   autoComplete="new-password" className={inputClass + " pr-16"} style={inputStyle} />
                 <button type="button" onClick={() => setShowPassword((s) => !s)}
-                  className="cursor-pointer absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-white transition px-1">
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-white transition px-1">
                   {showPassword ? "Hide" : "Show"}
                 </button>
               </div>
@@ -131,10 +168,7 @@ export default function Signup() {
               <input id="terms" type="checkbox" required
                 className="mt-0.5 w-4 h-4 accent-indigo-500 cursor-pointer rounded" />
               <label htmlFor="terms" className="text-sm text-slate-400 leading-snug cursor-pointer">
-                I agree to the{" "}
-                <span className="text-indigo-400 hover:text-indigo-300 transition">Terms of Service</span>{" "}
-                and{" "}
-                <span className="text-indigo-400 hover:text-indigo-300 transition">Privacy Policy</span>
+                I agree to the <span className="text-indigo-400">Terms of Service</span> and <span className="text-indigo-400">Privacy Policy</span>
               </label>
             </div>
 
@@ -149,7 +183,7 @@ export default function Signup() {
             )}
 
             <button type="submit" disabled={loading}
-              className="btn-primary w-full font-semibold py-3 rounded-xl text-sm mt-2 cursor-pointer"
+              className="btn-primary w-full font-semibold py-3 rounded-xl text-sm mt-2"
               style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)" }}>
               {loading ? (
                 <span className="flex items-center justify-center gap-2">

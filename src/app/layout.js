@@ -6,9 +6,16 @@ const geist = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 export const metadata = {
   title: "SafeBuddy — Secure Password Manager",
   description: "Store and manage your passwords securely with AES-256 encryption",
-   icons: {
+  icons: {
     icon: "/favicon.ico",
   },
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default function RootLayout({ children }) {
