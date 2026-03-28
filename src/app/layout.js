@@ -7,7 +7,7 @@ export const metadata = {
   title: "SafeBuddy — Secure Password Manager",
   description: "Store and manage your passwords securely with AES-256 encryption",
    icons: {
-    icon: "/favicon.svg",
+    icon: "/favicon.ico",
   },
 };
 
