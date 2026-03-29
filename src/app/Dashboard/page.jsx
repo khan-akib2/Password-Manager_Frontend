@@ -11,24 +11,6 @@ function getAuthHeader() {
   return { Authorization: `Bearer ${localStorage.getItem("token")}` };
 }
 
-function generatePassword(length = 16, useSymbols = true, useNumbers = true, useUpper = true) {
-  const lower = "abcdefghijklmnopqrstuvwxyz";
-  const upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  const numbers = "0123456789";
-  const symbols = "!@#$%^&*_-+=?";
-  let chars = lower;
-  if (useUpper) chars += upper;
-  if (useNumbers) chars += numbers;
-  if (useSymbols) chars += symbols;
-  let pwd = "";
-  // Ensure at least one of each selected type
-  if (useUpper) pwd += upper[Math.floor(Math.random() * upper.length)];
-  if (useNumbers) pwd += numbers[Math.floor(Math.random() * numbers.length)];
-  if (useSymbols) pwd += symbols[Math.floor(Math.random() * symbols.length)];
-  for (let i = pwd.length; i < length; i++) pwd += chars[Math.floor(Math.random() * chars.length)];
-  return pwd.split("").sort(() => Math.random() - 0.5).join("");
-}
-
 function SiteIcon({ site }) {
   const letter = site ? site.replace(/https?:\/\//, "").charAt(0).toUpperCase() : "?";
   const colors = [
@@ -59,7 +41,6 @@ export default function Dashboard() {
   const [showFormPassword, setShowFormPassword] = useState(false);
   const [copiedId, setCopiedId] = useState(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
-  const [genOptions, setGenOptions] = useState({ symbols: true, numbers: true, upper: true, length: 16 });
 
   const fetchPasswords = useCallback(async () => {
     try {
@@ -268,39 +249,6 @@ export default function Dashboard() {
                   className="cursor-pointer absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-white transition px-1">
                   {showFormPassword ? "Hide" : "Show"}
                 </button>
-              </div>
-              {/* Password generator */}
-              <div className="rounded-xl p-3 space-y-2" style={{ background: "rgba(30,41,59,0.6)", border: "1px solid rgba(99,102,241,0.15)" }}>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-slate-400">Generate password</span>
-                  <button type="button"
-                    onClick={() => setForm({ ...form, password: generatePassword(genOptions.length, genOptions.symbols, genOptions.numbers, genOptions.upper) })}
-                    className="text-xs font-semibold text-indigo-400 hover:text-indigo-300 transition px-2 py-1 rounded-lg"
-                    style={{ background: "rgba(99,102,241,0.15)" }}>
-                    Generate
-                  </button>
-                </div>
-                <div className="flex flex-wrap gap-3 text-xs text-slate-400">
-                  <label className="flex items-center gap-1.5 cursor-pointer">
-                    <input type="checkbox" checked={genOptions.upper} onChange={(e) => setGenOptions({ ...genOptions, upper: e.target.checked })} className="accent-indigo-500" />
-                    A-Z
-                  </label>
-                  <label className="flex items-center gap-1.5 cursor-pointer">
-                    <input type="checkbox" checked={genOptions.numbers} onChange={(e) => setGenOptions({ ...genOptions, numbers: e.target.checked })} className="accent-indigo-500" />
-                    0-9
-                  </label>
-                  <label className="flex items-center gap-1.5 cursor-pointer">
-                    <input type="checkbox" checked={genOptions.symbols} onChange={(e) => setGenOptions({ ...genOptions, symbols: e.target.checked })} className="accent-indigo-500" />
-                    !@#_-
-                  </label>
-                  <label className="flex items-center gap-1.5 cursor-pointer ml-auto">
-                    <span>Len:</span>
-                    <input type="number" min={8} max={32} value={genOptions.length}
-                      onChange={(e) => setGenOptions({ ...genOptions, length: Number(e.target.value) })}
-                      className="w-12 rounded px-1 py-0.5 text-white text-xs focus:outline-none"
-                      style={{ background: "rgba(15,23,42,0.9)", border: "1px solid rgba(99,102,241,0.25)" }} />
-                  </label>
-                </div>
               </div>
               {error && (
                 <div className="flex items-center gap-2 rounded-xl px-4 py-2.5" style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)" }}>
