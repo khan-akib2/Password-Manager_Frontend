@@ -50,7 +50,10 @@ export default function Signup() {
 
     if (!firstName || !lastName || !email || !password) return setError("All fields are required");
     if (password !== confirmPassword) return setError("Passwords do not match");
-    if (password.length < 6) return setError("Password must be at least 6 characters");
+    if (password.length < 8) return setError("Password must be at least 8 characters");
+    if (!/[A-Z]/.test(password)) return setError("Password must contain at least one uppercase letter (A-Z)");
+    if (!/[0-9]/.test(password)) return setError("Password must contain at least one number (0-9)");
+    if (!/[^a-zA-Z0-9]/.test(password)) return setError("Password must contain at least one symbol (!@#$%^&*_-)");
     if (!otp) return setError("Enter the OTP sent to your email");
 
     setLoading(true);
@@ -68,14 +71,12 @@ export default function Signup() {
   const inputClass = "input-glow w-full rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none transition text-sm";
   const inputStyle = { background: "rgba(15,23,42,0.9)", border: "1px solid rgba(99,102,241,0.25)", fontSize: "16px" };
 
-  const strength = (() => {
-    const p = form.password;
-    if (!p) return null;
-    if (p.length < 6) return { label: "Too short", color: "bg-red-500", w: "w-1/4" };
-    if (p.length < 8) return { label: "Weak", color: "bg-orange-500", w: "w-2/4" };
-    if (p.length < 12 || !/[^a-zA-Z0-9]/.test(p)) return { label: "Good", color: "bg-yellow-500", w: "w-3/4" };
-    return { label: "Strong", color: "bg-green-500", w: "w-full" };
-  })();
+  const pwdRules = [
+    { label: "At least 8 characters", ok: form.password.length >= 8 },
+    { label: "One uppercase letter (A-Z)", ok: /[A-Z]/.test(form.password) },
+    { label: "One number (0-9)", ok: /[0-9]/.test(form.password) },
+    { label: "One symbol (!@#$%^&*_-)", ok: /[^a-zA-Z0-9]/.test(form.password) },
+  ];
 
   return (
     <div className="relative flex items-center justify-center min-h-screen px-4 py-12 overflow-hidden">
@@ -146,12 +147,19 @@ export default function Signup() {
                   {showPassword ? "Hide" : "Show"}
                 </button>
               </div>
-              {strength && (
-                <div className="mt-2">
-                  <div className="h-1 bg-slate-700 rounded-full overflow-hidden">
-                    <div className={`h-full rounded-full transition-all duration-300 ${strength.color} ${strength.w}`} />
-                  </div>
-                  <p className="text-xs text-slate-500 mt-1">{strength.label}</p>
+              {form.password.length > 0 && (
+                <div className="mt-2 space-y-1">
+                  {pwdRules.map((rule) => (
+                    <div key={rule.label} className="flex items-center gap-2">
+                      <svg className={`w-3.5 h-3.5 shrink-0 ${rule.ok ? "text-green-400" : "text-slate-600"}`} fill="currentColor" viewBox="0 0 20 20">
+                        {rule.ok
+                          ? <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          : <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                        }
+                      </svg>
+                      <span className={`text-xs ${rule.ok ? "text-green-400" : "text-slate-500"}`}>{rule.label}</span>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
