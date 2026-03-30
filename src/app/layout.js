@@ -20,8 +20,8 @@ export const viewport = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={geist.variable}>
-      <body className="min-h-screen text-slate-100 font-sans" style={{ background: "#020817" }}>
+    <html lang="en" className={`${geist.variable} scroll-smooth`}>
+      <body className="min-h-screen text-slate-100 font-sans" style={{ background: "#0a0a0f" }}>
         {children}
       </body>
     </html>

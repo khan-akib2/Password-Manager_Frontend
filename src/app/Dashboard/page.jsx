@@ -3,20 +3,17 @@ import { useState, useEffect, useCallback } from "react";
 import api from "@/lib/api";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Logo from "@/components/Logo";
 
 const API = "/api/password";
 const emptyForm = { site: "", username: "", password: "" };
 
-function getAuthHeader() {
-  return { Authorization: `Bearer ${localStorage.getItem("token")}` };
-}
-
 function SiteIcon({ site }) {
   const letter = site ? site.replace(/https?:\/\//, "").charAt(0).toUpperCase() : "?";
   const colors = [
-    ["#7c3aed","#9333ea"], ["#2563eb","#0891b2"],
-    ["#059669","#0d9488"], ["#ea580c","#dc2626"],
-    ["#db2777","#e11d48"], ["#4f46e5","#2563eb"],
+    ["#6366f1","#8b5cf6"], ["#2563eb","#06b6d4"],
+    ["#059669","#10b981"], ["#ea580c","#f59e0b"],
+    ["#db2777","#e11d48"], ["#7c3aed","#6366f1"],
   ];
   const [from, to] = colors[letter.charCodeAt(0) % colors.length];
   return (
@@ -68,12 +65,7 @@ export default function Dashboard() {
     e.preventDefault();
     setError("");
     setSaving(true);
-    // trim inputs before sending
-    const payload = {
-      site: form.site.trim(),
-      username: form.username.trim(),
-      password: form.password,
-    };
+    const payload = { site: form.site.trim(), username: form.username.trim(), password: form.password };
     if (!payload.site || !payload.username || !payload.password) {
       setError("All fields are required");
       setSaving(false);
@@ -87,10 +79,7 @@ export default function Dashboard() {
         const res = await api.post(`${API}/add`, payload);
         setPasswords([res.data, ...passwords]);
       }
-      setForm(emptyForm);
-      setEditId(null);
-      setShowForm(false);
-      setShowFormPassword(false);
+      setForm(emptyForm); setEditId(null); setShowForm(false); setShowFormPassword(false);
     } catch (err) {
       setError(err.response?.data?.message || "Failed to save");
     } finally {
@@ -115,9 +104,7 @@ export default function Dashboard() {
     try {
       await api.delete(`${API}/${id}`);
       setPasswords(passwords.filter((p) => p._id !== id));
-    } catch {
-      setError("Failed to delete entry");
-    }
+    } catch { setError("Failed to delete"); }
   };
 
   const toggleVisible = (id) => {
@@ -128,78 +115,46 @@ export default function Dashboard() {
     });
   };
 
-  // Clipboard with fallback for HTTP/older browsers
   const copyPassword = (id, pw) => {
-    if (navigator.clipboard?.writeText) {
-      navigator.clipboard.writeText(pw).catch(() => {});
-    } else {
+    if (navigator.clipboard?.writeText) navigator.clipboard.writeText(pw).catch(() => {});
+    else {
       const el = document.createElement("textarea");
-      el.value = pw;
-      el.style.position = "fixed";
-      el.style.opacity = "0";
-      document.body.appendChild(el);
-      el.select();
-      document.execCommand("copy");
-      document.body.removeChild(el);
+      el.value = pw; el.style.position = "fixed"; el.style.opacity = "0";
+      document.body.appendChild(el); el.select(); document.execCommand("copy"); document.body.removeChild(el);
     }
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  const cancelForm = () => {
-    setForm(emptyForm);
-    setEditId(null);
-    setShowForm(false);
-    setError("");
-    setShowFormPassword(false);
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    router.push("/Login");
-  };
+  const cancelForm = () => { setForm(emptyForm); setEditId(null); setShowForm(false); setError(""); setShowFormPassword(false); };
+  const handleLogout = () => { localStorage.removeItem("token"); router.push("/Login"); };
 
   const filtered = passwords.filter((p) =>
     p.site.toLowerCase().includes(search.toLowerCase()) ||
     p.username.toLowerCase().includes(search.toLowerCase())
   );
 
-  const inp = "input-glow w-full rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none transition text-sm";
-  const inpStyle = { background: "rgba(15,23,42,0.9)", border: "1px solid rgba(99,102,241,0.25)" };
-  const btnStyle = { background: "rgba(30,41,59,0.9)", border: "1px solid rgba(99,102,241,0.2)" };
+  const inp = "input-field";
+  const inpStyle = { fontSize: "16px" };
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden">
-      <div className="orb orb-1" />
-      <div className="orb orb-2" />
+    <div className="min-h-screen bg-[#0a0a0f] grid-bg">
 
       {/* Navbar */}
-      <nav className="relative z-20 glass border-b border-slate-700/30 px-4 py-3 sm:px-6 sm:py-4">
+      <nav className="navbar sticky top-0 z-20 px-4 sm:px-6 py-3.5">
         <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-              style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)" }}>
-              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5}
-                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
-            </div>
-            <span className="text-white font-bold text-base sm:text-lg tracking-tight">SafeBuddy</span>
-          </div>
+          <Logo size={30} textSize="text-base" />
           <div className="flex items-center gap-2">
-            {/* Icon-only on mobile, icon+text on sm+ */}
             <Link href="/Profile"
-              className="flex items-center gap-2 text-sm text-slate-300 hover:text-white px-2.5 py-2 sm:px-4 rounded-xl transition"
-              style={{ background: "rgba(30,41,59,0.9)", border: "1px solid rgba(99,102,241,0.2)" }}>
-              <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              className="btn-outline flex items-center gap-2 text-sm px-3 py-2 rounded-lg">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
               <span className="hidden sm:inline">Profile</span>
             </Link>
             <button onClick={handleLogout}
-              className="cursor-pointer flex items-center gap-2 text-sm text-slate-300 hover:text-white px-2.5 py-2 sm:px-4 rounded-xl transition"
-              style={{ background: "rgba(30,41,59,0.9)", border: "1px solid rgba(99,102,241,0.2)" }}>
-              <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              className="btn-outline flex items-center gap-2 text-sm px-3 py-2 rounded-lg cursor-pointer">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
               </svg>
               <span className="hidden sm:inline">Sign out</span>
@@ -208,61 +163,63 @@ export default function Dashboard() {
         </div>
       </nav>
 
-      <div className="relative z-10 max-w-3xl mx-auto px-3 sm:px-4 py-6 sm:py-8">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-white mb-1">Your Vault</h1>
-          <p className="text-slate-400 text-sm">{passwords.length} password{passwords.length !== 1 ? "s" : ""} stored securely</p>
-        </div>
+      <div className="max-w-3xl mx-auto px-4 py-8">
 
-        {/* Add button */}
-        {!showForm && (
-          <button onClick={() => setShowForm(true)}
-            className="cursor-pointer btn-primary w-full font-semibold py-3.5 rounded-2xl text-sm mb-6 flex items-center justify-center gap-2"
-            style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)" }}>
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
-            </svg>
-            Add new password
-          </button>
-        )}
+        {/* Header */}
+        <div className="mb-7 flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-black text-white">Your Vault</h1>
+            <p className="text-gray-500 text-sm mt-0.5">{passwords.length} credential{passwords.length !== 1 ? "s" : ""} stored</p>
+          </div>
+          {!showForm && (
+            <button onClick={() => setShowForm(true)}
+              className="btn-primary font-semibold px-4 py-2.5 rounded-xl text-sm flex items-center gap-2 cursor-pointer">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+              </svg>
+              Add new
+            </button>
+          )}
+        </div>
 
         {/* Form */}
         {showForm && (
-          <div className="rounded-2xl p-4 sm:p-6 mb-6"
-            style={{ background: "rgba(15,23,42,0.95)", border: "1px solid rgba(99,102,241,0.3)", boxShadow: "0 0 40px rgba(99,102,241,0.12)", animation: "formSlideIn 0.3s cubic-bezier(0.4,0,0.2,1) forwards" }}>
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="text-white font-semibold text-base">{editId ? "Edit entry" : "Add new password"}</h2>
-              <button onClick={cancelForm} className="p-1.5 text-slate-500 hover:text-white rounded-lg transition" style={{ background: "rgba(30,41,59,0.8)" }}>
+          <div className="rounded-2xl p-5 mb-6" style={{ background: "#111118", border: "1px solid rgba(99,102,241,0.3)", animation: "formSlideIn 0.25s ease forwards" }}>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-white font-bold text-sm">{editId ? "Edit credential" : "Add new credential"}</h2>
+              <button onClick={cancelForm} className="text-gray-500 hover:text-white transition cursor-pointer p-1">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
             <form onSubmit={handleSubmit} className="space-y-3">
-              <input name="site" required value={form.site} onChange={handleChange} placeholder="Website or App name" className={inp} style={inpStyle} />
-              <input name="username" required value={form.username} onChange={handleChange} placeholder="Username or email" className={inp} style={inpStyle} />
+              <input name="site" required value={form.site} onChange={handleChange}
+                placeholder="Website or App name" className={inp} style={inpStyle} />
+              <input name="username" required value={form.username} onChange={handleChange}
+                placeholder="Username or email" className={inp} style={inpStyle} />
               <div className="relative">
                 <input name="password" required value={form.password} onChange={handleChange}
                   type={showFormPassword ? "text" : "password"} placeholder="Password"
-                  className= {inp + " pr-16"} style={{ ...inpStyle, fontSize: "16px" }} />
+                  className={inp + " pr-16"} style={inpStyle} />
                 <button type="button" onClick={() => setShowFormPassword(!showFormPassword)}
-                  className="cursor-pointer absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-white transition px-1">
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 hover:text-white transition cursor-pointer px-1">
                   {showFormPassword ? "Hide" : "Show"}
                 </button>
               </div>
               {error && (
-                <div className="flex items-center gap-2 rounded-xl px-4 py-2.5" style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)" }}>
-                  <span className="text-red-400 text-sm">{error}</span>
+                <div className="text-red-400 text-sm px-3 py-2 rounded-lg"
+                  style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.15)" }}>
+                  {error}
                 </div>
               )}
               <div className="flex gap-3 pt-1">
                 <button type="submit" disabled={saving}
-                  className="cursor-pointer btn-primary flex-1 font-semibold py-3 rounded-xl text-sm"
-                  style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)" }}>
-                  {saving ? "Saving..." : editId ? "Update entry" : "Save password"}
+                  className="btn-primary flex-1 font-semibold py-2.5 rounded-xl text-sm cursor-pointer">
+                  {saving ? "Saving..." : editId ? "Update" : "Save"}
                 </button>
                 <button type="button" onClick={cancelForm}
-                  className="cursor-pointer px-5 text-slate-300 hover:text-white rounded-xl transition text-sm" style={btnStyle}>
+                  className="btn-outline px-5 rounded-xl text-sm cursor-pointer">
                   Cancel
                 </button>
               </div>
@@ -272,50 +229,51 @@ export default function Dashboard() {
 
         {/* Search */}
         <div className="relative mb-5">
-          <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search passwords..."
-            className="input-glow w-full rounded-xl pl-11 pr-4 py-3 text-white placeholder-slate-500 focus:outline-none transition text-sm"
-            style={{ background: "rgba(15,23,42,0.85)", border: "1px solid rgba(99,102,241,0.2)" }} />
+          <input value={search} onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by site or username..."
+            className="input-field pl-10" />
         </div>
 
         {/* List */}
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-20 gap-4">
-            <div className="w-10 h-10 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin" />
-            <p className="text-slate-500 text-sm">Loading your vault...</p>
+          <div className="flex flex-col items-center justify-center py-24 gap-3">
+            <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+            <p className="text-gray-600 text-sm">Loading vault...</p>
           </div>
         ) : filtered.length === 0 ? (
-          <div className="text-center py-20">
-            <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4"
-              style={{ background: "rgba(15,23,42,0.85)", border: "1px solid rgba(99,102,241,0.15)" }}>
-              <svg className="w-8 h-8 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+          <div className="text-center py-24">
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
+              style={{ background: "#111118", border: "1px solid #1e1e2e" }}>
+              <svg className="w-7 h-7 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
               </svg>
             </div>
-            <p className="text-slate-400 font-medium">{search ? "No results found" : "Your vault is empty"}</p>
-            <p className="text-slate-600 text-sm mt-1">{search ? "Try a different search term" : "Add your first password to get started"}</p>
+            <p className="text-gray-400 font-semibold text-sm">{search ? "No results found" : "Vault is empty"}</p>
+            <p className="text-gray-600 text-xs mt-1">{search ? "Try a different search" : "Add your first credential to get started"}</p>
           </div>
         ) : (
-          <ul className="space-y-3">
-            {filtered.map((item, i) => (
-              <li key={item._id} className="card-hover rounded-2xl px-5 py-4"
-                style={{ background: "rgba(15,23,42,0.85)", border: "1px solid rgba(99,102,241,0.15)" }}>
+          <ul className="space-y-2.5">
+            {filtered.map((item) => (
+              <li key={item._id} className="card rounded-xl px-4 py-3.5">
                 <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     <SiteIcon site={item.site} />
                     <div className="flex-1 min-w-0">
                       <p className="text-white font-semibold text-sm truncate">{item.site}</p>
-                      <p className="text-slate-400 text-xs truncate mt-0.5">{item.username}</p>
-                      <p className="text-slate-500 text-xs font-mono mt-1 tracking-wider">
+                      <p className="text-gray-500 text-xs truncate mt-0.5">{item.username}</p>
+                      <p className="text-gray-600 text-xs font-mono mt-1">
                         {visibleIds.has(item._id) ? item.password : "••••••••••••"}
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1.5 shrink-0 pl-0 sm:pl-2">
-                    <button onClick={() => toggleVisible(item._id)} title={visibleIds.has(item._id) ? "Hide" : "Show"}
-                      className="cursor-pointer p-2 text-slate-400 hover:text-white rounded-lg transition" style={{ background: "rgba(30,41,59,0.8)" }}>
+                  <div className="flex items-center gap-1 shrink-0">
+                    {/* Toggle visibility */}
+                    <button onClick={() => toggleVisible(item._id)}
+                      className="p-2 text-gray-500 hover:text-white rounded-lg transition cursor-pointer"
+                      style={{ background: "#1a1a24" }}>
                       {visibleIds.has(item._id) ? (
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
@@ -327,10 +285,12 @@ export default function Dashboard() {
                         </svg>
                       )}
                     </button>
-                    <button onClick={() => copyPassword(item._id, item.password)} title="Copy"
-                      className="cursor-pointer p-2 text-slate-400 hover:text-white rounded-lg transition" style={{ background: "rgba(30,41,59,0.8)" }}>
+                    {/* Copy */}
+                    <button onClick={() => copyPassword(item._id, item.password)}
+                      className="p-2 text-gray-500 hover:text-white rounded-lg transition cursor-pointer"
+                      style={{ background: "#1a1a24" }}>
                       {copiedId === item._id ? (
-                        <svg className="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                         </svg>
                       ) : (
@@ -339,18 +299,23 @@ export default function Dashboard() {
                         </svg>
                       )}
                     </button>
-                    <button onClick={() => handleEdit(item)} title="Edit"
-                      className="cursor-pointer p-2 text-indigo-400 hover:text-indigo-300 rounded-lg transition" style={{ background: "rgba(30,41,59,0.8)" }}>
+                    {/* Edit */}
+                    <button onClick={() => handleEdit(item)}
+                      className="p-2 text-indigo-400 hover:text-indigo-300 rounded-lg transition cursor-pointer"
+                      style={{ background: "#1a1a24" }}>
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                       </svg>
                     </button>
-                    <button onClick={() => handleDelete(item._id)} title="Delete"
-                      className="cursor-pointer p-2 rounded-lg transition text-sm font-medium px-3"
+                    {/* Delete */}
+                    <button onClick={() => handleDelete(item._id)}
+                      className="p-2 rounded-lg transition cursor-pointer text-sm font-medium"
                       style={{
-                        background: deleteConfirmId === item._id ? "rgba(239,68,68,0.2)" : "rgba(30,41,59,0.8)",
-                        color: deleteConfirmId === item._id ? "#f87171" : "#f87171",
-                        border: deleteConfirmId === item._id ? "1px solid rgba(239,68,68,0.4)" : "none",
+                        background: deleteConfirmId === item._id ? "rgba(239,68,68,0.15)" : "#1a1a24",
+                        color: "#f87171",
+                        border: deleteConfirmId === item._id ? "1px solid rgba(239,68,68,0.3)" : "1px solid transparent",
+                        minWidth: deleteConfirmId === item._id ? "72px" : "auto",
+                        padding: deleteConfirmId === item._id ? "0.5rem 0.75rem" : "0.5rem",
                       }}>
                       {deleteConfirmId === item._id ? "Confirm?" : (
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
